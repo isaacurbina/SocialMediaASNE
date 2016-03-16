@@ -6,12 +6,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.gorbin.asne.core.SocialNetwork;
 import com.github.gorbin.asne.core.SocialNetworkManager;
 import com.github.gorbin.asne.core.SocialNetworkManager.OnInitializationCompleteListener;
 import com.github.gorbin.asne.core.listener.OnLoginCompleteListener;
+import com.github.gorbin.asne.core.listener.OnRequestSocialPersonCompleteListener;
 import com.github.gorbin.asne.core.persons.SocialPerson;
 import com.github.gorbin.asne.facebook.FacebookSocialNetwork;
 import com.github.gorbin.asne.googleplus.GooglePlusSocialNetwork;
@@ -23,13 +27,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainFragment extends Fragment implements OnInitializationCompleteListener, OnLoginCompleteListener {
+import twitter4j.Twitter;
+
+public class MainFragment extends Fragment implements OnInitializationCompleteListener, OnLoginCompleteListener, OnRequestSocialPersonCompleteListener {
 
     private Button btnFacebook;
     private Button btnTwitter;
     private Button btnLinkedin;
     private Button btnGoogleplus;
     public static SocialNetworkManager mSocialNetworkManager;
+    ImageView ivFacebook, ivTwitter, ivGooglePlus, ivLinkedin;
+    TextView tvFacebook, tvTwitter, tvGooglePlus, tvLinkedin;
+    LinearLayout fbProfile, twProfile, gpProfile, inProfile;
     String facebook_app_id, facebook_scope,
             twitter_consumer_key,
             twitter_consumer_secret,
@@ -90,6 +99,20 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
         btnGoogleplus = (Button) rootView.findViewById(R.id.btn_googleplus);
         btnGoogleplus.setOnClickListener(loginClick);
         initSocialNetworks();
+
+        tvFacebook = (TextView) rootView.findViewById(R.id.tv_facebook);
+        tvTwitter = (TextView) rootView.findViewById(R.id.tv_twitter);
+        tvGooglePlus = (TextView) rootView.findViewById(R.id.tv_googleplus);
+        tvLinkedin = (TextView) rootView.findViewById(R.id.tv_linkedin);
+        ivFacebook = (ImageView) rootView.findViewById(R.id.iv_facebook);
+        ivTwitter = (ImageView) rootView.findViewById(R.id.iv_twitter);
+        ivGooglePlus = (ImageView) rootView.findViewById(R.id.iv_googleplus);
+        ivLinkedin = (ImageView) rootView.findViewById(R.id.iv_linkedin);
+        fbProfile = (LinearLayout) rootView.findViewById(R.id.fb_profile);
+        twProfile = (LinearLayout) rootView.findViewById(R.id.tw_profile);
+        gpProfile = (LinearLayout) rootView.findViewById(R.id.gp_profile);
+        inProfile = (LinearLayout) rootView.findViewById(R.id.in_profile);
+
         return rootView;
     }
 
@@ -112,6 +135,8 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
 
     private void initSocialNetwork(SocialNetwork socialNetwork){
         if(socialNetwork.isConnected()){
+            socialNetwork.setOnRequestCurrentPersonCompleteListener(this);
+            socialNetwork.requestCurrentPerson();
             switch (socialNetwork.getID()){
                 case FacebookSocialNetwork.ID:
                     btnFacebook.setText("Connected to Facebook");
@@ -129,18 +154,45 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
         }
     }
 
-    /*@Override
-    public void onRequestSocialPersonSuccess(int i, SocialPerson socialPerson) {
+    @Override
+    public void onRequestSocialPersonSuccess(int networkId, SocialPerson socialPerson) {
         MainActivity.hideProgress();
-        name.setText(socialPerson.name);
-        id.setText(socialPerson.id);
-        String socialPersonString = socialPerson.toString();
-        String infoString = socialPersonString.substring(socialPersonString.indexOf("{")+1, socialPersonString.lastIndexOf("}"));
-        info.setText(infoString.replace(", ", "\n"));
-        Picasso.with(getActivity())
-                .load(socialPerson.avatarURL)
-                .into(photo);
-    }*/
+        switch (networkId) {
+
+            case FacebookSocialNetwork.ID:
+                tvFacebook.setText(socialPerson.name);
+                Picasso.with(getActivity())
+                        .load(socialPerson.avatarURL)
+                        .into(ivFacebook);
+                fbProfile.setVisibility(View.VISIBLE);
+                break;
+
+            case TwitterSocialNetwork.ID:
+                tvTwitter.setText(socialPerson.name);
+                Picasso.with(getActivity())
+                        .load(socialPerson.avatarURL)
+                        .into(ivTwitter);
+                twProfile.setVisibility(View.VISIBLE);
+                break;
+
+            case GooglePlusSocialNetwork.ID:
+                tvGooglePlus.setText(socialPerson.name);
+                Picasso.with(getActivity())
+                        .load(socialPerson.avatarURL)
+                        .into(ivGooglePlus);
+                gpProfile.setVisibility(View.VISIBLE);
+                break;
+
+            case LinkedInSocialNetwork.ID:
+                tvLinkedin.setText(socialPerson.name);
+                Picasso.with(getActivity())
+                        .load(socialPerson.avatarURL)
+                        .into(ivLinkedin);
+                inProfile.setVisibility(View.VISIBLE);
+                break;
+        }
+
+    }
 
     public void initSocialNetworks() {
         facebook_app_id = getActivity().getResources().getString(R.string.facebook_app_id);

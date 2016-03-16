@@ -27,5 +27,9 @@
     <string name="callback_url">
         http://www.github.com/isaacurbina
     </string>
+    <string name="tv_facebook_hint">FB Name</string>
+    <string name="tv_twitter_hint">TW Name</string>
+    <string name="tv_googleplus_hint">G+ Name</string>
+    <string name="tv_linkedin_hint">IN Name</string>
 
 </resources>

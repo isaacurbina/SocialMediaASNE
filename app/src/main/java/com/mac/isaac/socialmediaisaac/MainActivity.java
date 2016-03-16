@@ -25,6 +25,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
+        pd = new ProgressDialog(context);
+        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        pd.setCancelable(false);
+        pd.setCanceledOnTouchOutside(false);
         //printHashKey();
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -43,11 +47,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected static void showProgress(String message) {
-        pd = new ProgressDialog(context);
-        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         pd.setMessage(message);
-        pd.setCancelable(false);
-        pd.setCanceledOnTouchOutside(false);
         pd.show();
     }
 
