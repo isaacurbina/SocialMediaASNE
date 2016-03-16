@@ -1,7 +1,12 @@
 package com.mac.isaac.socialmediaisaac;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +36,7 @@ import twitter4j.Twitter;
 
 public class MainFragment extends Fragment implements OnInitializationCompleteListener, OnLoginCompleteListener, OnRequestSocialPersonCompleteListener {
 
+    final int PERMISSIONS_REQUEST_GET_ACCOUNTS = 1234;
     private Button btnFacebook;
     private Button btnTwitter;
     private Button btnLinkedin;
@@ -65,16 +71,20 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
                     networkId = GooglePlusSocialNetwork.ID;
                     break;
             }
-            SocialNetwork socialNetwork = mSocialNetworkManager.getSocialNetwork(networkId);
-            if(!socialNetwork.isConnected()) {
-                if(networkId != 0) {
-                    socialNetwork.requestLogin();
-                    MainActivity.showProgress("Loading social person");
+            try {
+                SocialNetwork socialNetwork = mSocialNetworkManager.getSocialNetwork(networkId);
+                if (!socialNetwork.isConnected()) {
+                    if (networkId != 0) {
+                        socialNetwork.requestLogin();
+                        MainActivity.showProgress("Loading social person");
+                    } else {
+                        Toast.makeText(getActivity(), "Wrong networkId", Toast.LENGTH_LONG).show();
+                    }
                 } else {
-                    Toast.makeText(getActivity(), "Wrong networkId", Toast.LENGTH_LONG).show();
+                    startProfile(socialNetwork.getID());
                 }
-            } else {
-                startProfile(socialNetwork.getID());
+            } catch (Exception e) {
+                Toast.makeText(getActivity(), "Error click in social network button", Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -258,4 +268,5 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
         MainActivity.hideProgress();
         Toast.makeText(getActivity(), "ERROR: " + errorMessage, Toast.LENGTH_LONG).show();
     }
+
 }
