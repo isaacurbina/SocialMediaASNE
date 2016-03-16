@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">SocialMediaIsaac</string>
+    <string name="facebook_app_id">
+        1055505671196212
+    </string>
+    <string name="facebook_scope">
+        public_profile, email, user_friends, user_location, user_birthday
+    </string>
+    <string name="twitter_consumer_key">
+        nLNZiL1NutUldyWhgviISHdRd
+    </string>
+    <string name="twitter_consumer_secret">
+        wbr1ufHxHTAo6HLWpxoC4pswBvRzckjBvBv8RdAOqjqF9Dsg45
+    </string>
+    <string name="linkedin_client_id">
+        77am1ego5g5a1h
+    </string>
+    <string name="linkedin_client_secret">
+        3WZg25vVNPyB0WBi
+    </string>
+    <string name="linkedin_scope">
+        r_basicprofile+r_emailaddress+rw_company_admin+w_share
+    </string>
+    <string name="googleplus_client_id">
+        395905322937-po10rhdtpa9k1jla1elafbmnn04eog4t.apps.googleusercontent.com
+    </string>
+    <string name="callback_url">
+        http://www.github.com/isaacurbina
+    </string>
+
+</resources>
