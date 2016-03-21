@@ -27,6 +27,8 @@ dependencies {
     compile 'com.github.asne:asne-twitter:0.3.3'
     compile 'com.github.asne:asne-googleplus:0.3.3'
     compile 'com.github.asne:asne-linkedin:0.3.3'
+    compile 'com.github.asne:asne-instagram:0.3.3'
     compile 'com.android.support:support-v4:23.2.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.github.k0shk0sh:PermissionHelper:1.0.7'
 }

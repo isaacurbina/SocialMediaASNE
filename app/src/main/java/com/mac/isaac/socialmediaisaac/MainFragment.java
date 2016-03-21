@@ -1,6 +1,7 @@
 package com.mac.isaac.socialmediaisaac;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -24,6 +25,7 @@ import com.github.gorbin.asne.core.listener.OnRequestSocialPersonCompleteListene
 import com.github.gorbin.asne.core.persons.SocialPerson;
 import com.github.gorbin.asne.facebook.FacebookSocialNetwork;
 import com.github.gorbin.asne.googleplus.GooglePlusSocialNetwork;
+import com.github.gorbin.asne.instagram.InstagramSocialNetwork;
 import com.github.gorbin.asne.linkedin.LinkedInSocialNetwork;
 import com.github.gorbin.asne.twitter.TwitterSocialNetwork;
 import com.squareup.picasso.Picasso;
@@ -36,15 +38,16 @@ import twitter4j.Twitter;
 
 public class MainFragment extends Fragment implements OnInitializationCompleteListener, OnLoginCompleteListener, OnRequestSocialPersonCompleteListener {
 
-    final int PERMISSIONS_REQUEST_GET_ACCOUNTS = 1234;
+    GetAccountsPermission mInterface;
     private Button btnFacebook;
     private Button btnTwitter;
     private Button btnLinkedin;
     private Button btnGoogleplus;
+    private Button btnInstagram;
     public static SocialNetworkManager mSocialNetworkManager;
-    ImageView ivFacebook, ivTwitter, ivGooglePlus, ivLinkedin;
-    TextView tvFacebook, tvTwitter, tvGooglePlus, tvLinkedin;
-    LinearLayout fbProfile, twProfile, gpProfile, inProfile;
+    ImageView ivFacebook, ivTwitter, ivGooglePlus, ivLinkedin, ivInstagram;
+    TextView tvFacebook, tvTwitter, tvGooglePlus, tvLinkedin, tvInstagram;
+    LinearLayout fbProfile, twProfile, gpProfile, inProfile, igProfile;
     String facebook_app_id, facebook_scope,
             twitter_consumer_key,
             twitter_consumer_secret,
@@ -52,7 +55,11 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
             linkedin_client_secret,
             linkedin_scope,
             googleplus_client_id,
-            callback_url;
+            callback_url,
+            instagram_client_id,
+            instagram_client_secret,
+            instagram_scope,
+            instagram_redirect_uri;
     private View.OnClickListener loginClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -69,6 +76,13 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
                     break;
                 case R.id.btn_googleplus:
                     networkId = GooglePlusSocialNetwork.ID;
+                    if (!mInterface.hasPermission()) {
+                        mInterface.requestPermission();
+                        return;
+                    }
+                    break;
+                case R.id.btn_instagram:
+                    networkId = InstagramSocialNetwork.ID;
                     break;
             }
             try {
@@ -85,6 +99,7 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
                 }
             } catch (Exception e) {
                 Toast.makeText(getActivity(), "Error click in social network button", Toast.LENGTH_LONG).show();
+                Log.e("MYTAG", "Error: "+e.getMessage());
             }
         }
     };
@@ -108,20 +123,25 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
         btnLinkedin.setOnClickListener(loginClick);
         btnGoogleplus = (Button) rootView.findViewById(R.id.btn_googleplus);
         btnGoogleplus.setOnClickListener(loginClick);
+        btnInstagram = (Button) rootView.findViewById(R.id.btn_instagram);
+        btnInstagram.setOnClickListener(loginClick);
         initSocialNetworks();
 
         tvFacebook = (TextView) rootView.findViewById(R.id.tv_facebook);
         tvTwitter = (TextView) rootView.findViewById(R.id.tv_twitter);
         tvGooglePlus = (TextView) rootView.findViewById(R.id.tv_googleplus);
         tvLinkedin = (TextView) rootView.findViewById(R.id.tv_linkedin);
+        tvInstagram = (TextView) rootView.findViewById(R.id.tv_instagram);
         ivFacebook = (ImageView) rootView.findViewById(R.id.iv_facebook);
         ivTwitter = (ImageView) rootView.findViewById(R.id.iv_twitter);
         ivGooglePlus = (ImageView) rootView.findViewById(R.id.iv_googleplus);
         ivLinkedin = (ImageView) rootView.findViewById(R.id.iv_linkedin);
+        ivInstagram = (ImageView) rootView.findViewById(R.id.iv_instagram);
         fbProfile = (LinearLayout) rootView.findViewById(R.id.fb_profile);
         twProfile = (LinearLayout) rootView.findViewById(R.id.tw_profile);
         gpProfile = (LinearLayout) rootView.findViewById(R.id.gp_profile);
         inProfile = (LinearLayout) rootView.findViewById(R.id.in_profile);
+        igProfile = (LinearLayout) rootView.findViewById(R.id.ig_profile);
 
         return rootView;
     }
@@ -138,6 +158,12 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
     public void onSocialNetworkManagerInitialized() {
         //when init SocialNetworks - get and setup login only for initialized SocialNetworks
         for (SocialNetwork socialNetwork : mSocialNetworkManager.getInitializedSocialNetworks()) {
+            if (socialNetwork.getID() == GooglePlusSocialNetwork.ID) {
+                if (!mInterface.hasPermission()) {
+                    mInterface.requestPermission();
+                    return;
+                }
+            }
             socialNetwork.setOnLoginCompleteListener(this);
             initSocialNetwork(socialNetwork);
         }
@@ -159,6 +185,9 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
                     break;
                 case GooglePlusSocialNetwork.ID:
                     btnGoogleplus.setText("Connected to GooglePlus");
+                    break;
+                case InstagramSocialNetwork.ID:
+                    btnInstagram.setText("Connected to Instagram");
                     break;
             }
         }
@@ -186,11 +215,15 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
                 break;
 
             case GooglePlusSocialNetwork.ID:
-                tvGooglePlus.setText(socialPerson.name);
-                Picasso.with(getActivity())
-                        .load(socialPerson.avatarURL)
-                        .into(ivGooglePlus);
-                gpProfile.setVisibility(View.VISIBLE);
+                if (mInterface.hasPermission()) {
+                    tvGooglePlus.setText(socialPerson.name);
+                    Picasso.with(getActivity())
+                            .load(socialPerson.avatarURL)
+                            .into(ivGooglePlus);
+                    gpProfile.setVisibility(View.VISIBLE);
+                } else {
+                    mInterface.requestPermission();
+                }
                 break;
 
             case LinkedInSocialNetwork.ID:
@@ -199,6 +232,13 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
                         .load(socialPerson.avatarURL)
                         .into(ivLinkedin);
                 inProfile.setVisibility(View.VISIBLE);
+                break;
+            case InstagramSocialNetwork.ID:
+                tvInstagram.setText(socialPerson.name);
+                Picasso.with(getActivity())
+                        .load(socialPerson.avatarURL)
+                        .into(ivInstagram);
+                igProfile.setVisibility(View.VISIBLE);
                 break;
         }
 
@@ -214,6 +254,9 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
         linkedin_scope = getActivity().getResources().getString(R.string.linkedin_scope);
         googleplus_client_id = getActivity().getResources().getString(R.string.googleplus_client_id);
         callback_url = getActivity().getResources().getString(R.string.callback_url);
+        instagram_client_id = getActivity().getResources().getString(R.string.instagram_client_id);
+        instagram_client_secret = getActivity().getResources().getString(R.string.instagram_client_secret);
+        instagram_redirect_uri = getActivity().getResources().getString(R.string.instagram_redirect_uri);
         ArrayList<String> fbScope = new ArrayList<String>();
         fbScope.addAll(Arrays.asList(facebook_scope));
 
@@ -232,11 +275,17 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
                     linkedin_client_secret,
                     callback_url,
                     linkedin_scope);
+            InstagramSocialNetwork igNetwork = new InstagramSocialNetwork(this,
+                    instagram_client_id,
+                    instagram_client_secret,
+                    instagram_redirect_uri,
+                    instagram_scope);
 
             mSocialNetworkManager.addSocialNetwork(fbNetwork);
             mSocialNetworkManager.addSocialNetwork(twNetwork);
             mSocialNetworkManager.addSocialNetwork(gpNetwork);
             mSocialNetworkManager.addSocialNetwork(inNetwork);
+            mSocialNetworkManager.addSocialNetwork(igNetwork);
 
             //Initiate every network from mSocialNetworkManager
             getFragmentManager()
@@ -269,4 +318,14 @@ public class MainFragment extends Fragment implements OnInitializationCompleteLi
         Toast.makeText(getActivity(), "ERROR: " + errorMessage, Toast.LENGTH_LONG).show();
     }
 
+    public interface GetAccountsPermission {
+        public void requestPermission();
+        public boolean hasPermission();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mInterface = (GetAccountsPermission) context;
+    }
 }

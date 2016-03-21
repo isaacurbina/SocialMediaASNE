@@ -123,4 +123,33 @@
         android:layout_margin="5dp"
         android:layout_gravity="center_horizontal" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/ig_profile"
+        android:visibility="gone"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:scaleType="centerCrop"
+            android:id="@+id/iv_instagram"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:id="@+id/tv_instagram"
+            android:hint="@string/tv_instagram_hint"/>
+    </LinearLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Instagram Login"
+        android:id="@+id/btn_instagram"
+        android:background="@color/instagram"
+        android:layout_margin="5dp"
+        android:layout_gravity="center_horizontal" />
+
 </LinearLayout>

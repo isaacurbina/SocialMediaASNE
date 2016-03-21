@@ -1,24 +1,37 @@
 package com.mac.isaac.socialmediaisaac;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.fastaccess.permission.base.PermissionHelper;
+import com.fastaccess.permission.base.callback.OnPermissionCallback;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainFragment.GetAccountsPermission, OnPermissionCallback {
 
-    public static final String SOCIAL_NETWORK_TAG = "SocialIntegrationMain.SOCIAL_NETWORK_TAG";
+    static final String SOCIAL_NETWORK_TAG = "SocialIntegrationMain.SOCIAL_NETWORK_TAG";
     private static Context context;
     private static ProgressDialog pd;
+    final int PERMISSIONS_REQUEST_CODE = 1234;
+    final String PERMISSION = Manifest.permission.GET_ACCOUNTS;
+    PermissionHelper permissionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,12 +42,14 @@ public class MainActivity extends AppCompatActivity {
         pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         pd.setCancelable(false);
         pd.setCanceledOnTouchOutside(false);
-        //printHashKey();
+        printHashKey();
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new MainFragment())
                     .commit();
         }
+        permissionHelper = PermissionHelper.getInstance(this);
+        requestPermission();
     }
 
     @Override
@@ -69,5 +84,74 @@ public class MainActivity extends AppCompatActivity {
         } catch (NoSuchAlgorithmException e) {
             Log.e("HASH KEY:", "NoSuchAlgorithmException "+e.getMessage());
         }
+    }
+
+    @Override
+    public void requestPermission() {
+        Log.i("MYTAG", "requestPermission()");
+        if (!hasPermission()) {
+            Log.i("MYTAG", "setForceAccepting()");
+            permissionHelper.setForceAccepting(false).request(PERMISSION);
+        }
+    }
+
+    @Override
+    public boolean hasPermission() {
+        if (ContextCompat.checkSelfPermission(this, PERMISSION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.i("MYTAG", "onRequestPermissionsResult()");
+        permissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onPermissionGranted(String[] permissionName) {
+        Log.i("MYTAG", "onPermissionGranted()");
+        Intent i = new Intent(this, MainActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
+    }
+
+    @Override
+    public void onPermissionDeclined(String[] permissionName) {
+        Log.i("MYTAG", "onPermissionDeclined()");
+    }
+
+    @Override
+    public void onPermissionPreGranted(String permissionsName) {
+        Log.i("MYTAG", "onPermissionPreGranted()");
+    }
+
+    @Override
+    public void onPermissionNeedExplanation(String permissionName) {
+        Log.i("MYTAG", "onPermissionNeedExplanation()");
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Accept me")
+                .setMessage(permissionName)
+                .setPositiveButton("Request", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        permissionHelper.requestAfterExplanation(PERMISSION);
+                    }
+                })
+                .create();
+        dialog.show();
+    }
+
+    @Override
+    public void onPermissionReallyDeclined(String permissionName) {
+        Log.i("MYTAG", "onPermissionReallyDeclined()");
+    }
+
+    @Override
+    public void onNoPermissionNeeded() {
+        Log.i("MYTAG", "onNoPermissionNeeded()");
     }
 }

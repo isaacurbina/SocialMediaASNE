@@ -24,6 +24,18 @@
     <string name="googleplus_client_id">
         395905322937-po10rhdtpa9k1jla1elafbmnn04eog4t.apps.googleusercontent.com
     </string>
+    <string name="instagram_client_id">
+        0540ff8f27e5400b8744b396e46b447f
+    </string>
+    <string name="instagram_client_secret">
+        997a6c83a0a74c1cab8550806f88d167
+    </string>
+    <string name="instagram_scope">
+        basic+public_profile+follower_list
+    </string>
+    <string name="instagram_redirect_uri">
+        oauth://ASNE
+    </string>
     <string name="callback_url">
         http://www.github.com/isaacurbina
     </string>
@@ -31,5 +43,6 @@
     <string name="tv_twitter_hint">TW Name</string>
     <string name="tv_googleplus_hint">G+ Name</string>
     <string name="tv_linkedin_hint">IN Name</string>
+    <string name="tv_instagram_hint">IG Name</string>
 
 </resources>
